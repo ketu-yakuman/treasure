@@ -124,8 +124,8 @@ select{width:100%;padding:10px 12px;background:#0f4a2e;border:1.5px solid #2d7a5
       <div class="setting-group">
         <select id="sel-yak">
           <option value="0">焼き鳥：なし</option>
-          <option value="10000">焼き鳥：10,000</option>
-          <option value="20000" selected>焼き鳥：20,000</option>
+          <option value="10000" selected>焼き鳥：10,000</option>
+          <option value="20000">焼き鳥：20,000</option>
           <option value="30000">焼き鳥：30,000</option>
         </select>
       </div>
@@ -133,6 +133,13 @@ select{width:100%;padding:10px 12px;background:#0f4a2e;border:1.5px solid #2d7a5
     <div class="toggle-row" onclick="toggleSink()" style="margin-bottom:4px">
       <span class="toggle-label">沈みボーナス（原点未満 -10,000）</span>
       <div class="toggle-sw" id="sink-sw"></div>
+    </div>
+    <div class="setting-group" style="margin-bottom:4px">
+      <select id="sel-oka">
+        <option value="none">オカ：なし</option>
+        <option value="15,0,0">オカ：1位+15</option>
+        <option value="10,5,0">オカ：1位+10 / 2位+5</option>
+      </select>
     </div>
     <div class="toggle-row" onclick="toggleTobi()" style="margin-bottom:4px">
       <span class="toggle-label">飛ばしボーナス</span>
@@ -213,15 +220,21 @@ let players = [
 ];
 
 function toHalf(s){
-  return s.replace(/[０-９－]/g, c=>{
-    if(c==='－') return '-';
-    return String.fromCharCode(c.charCodeAt(0)-0xFEE0);
-  });
+  return s
+    .replace(/[０-９]/g, c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0))
+    .replace(/[－−‐]/g, '-')  // 全角マイナス・U+2212・ハイフン
+    .replace(/[^\d\-]/g, ''); // 数字とマイナス以外を除去
 }
 
 function toggleSink(){
   sinkOn=!sinkOn;
   document.getElementById('sink-sw').classList.toggle('on',sinkOn);
+}
+
+function getOka(){
+  const v=document.getElementById('sel-oka').value;
+  if(v==='none') return null;
+  return v.split(',').map(Number); // [1位ボーナス, 2位ボーナス, 3位ボーナス]
 }
 
 function toggleTobi(){
@@ -288,9 +301,10 @@ function renderPlayers(){
         ${showYak?`<button class="yak-btn${p.yak?' on':''}" onclick="toggleYak(${i})">${p.yak?'🐔 焼鳥':'焼鳥'}</button>`:''}
       </div>
       <div class="score-wrap">
-        <input class="score-input" id="sc-${i}" type="text" inputmode="numeric"
+        <input class="score-input" id="sc-${i}" type="text" inputmode="decimal"
           value="${p.score}" placeholder="持ち点"
-          oninput="onScore(${i},this.value)">
+          oninput="onScore(${i},this.value)"
+          onkeypress="return /[\d\-]/.test(event.key)">
         <span class="score-unit">点</span>
       </div>
     </div>`;
@@ -340,8 +354,13 @@ function calculate(){
   sorted.forEach((o,r)=>rank[o.i]=r+1);
   const top=sorted[0].i;
 
-  // 素点換算+ウマ
-  const raw=scores.map((s,i)=>(s-GENTEN)/1000+uma[rank[i]-1]);
+  // 素点換算+ウマ（オカON時は基準点40000、OFFは35000）
+  const okaArr=getOka(); // null or [1位, 2位, 3位]
+  const KIJUN = okaArr ? 40000 : GENTEN;
+  const raw=scores.map((s,i)=>(s-KIJUN)/1000+uma[rank[i]-1]);
+
+  // オカボーナス（順位別）
+  const okaPen=players.map((_,i)=> okaArr ? okaArr[rank[i]-1] : 0);
 
   // 焼き鳥
   // 焼き鳥プレイヤー → 焼き鳥でないプレイヤーへ均等支払い
@@ -384,7 +403,7 @@ function calculate(){
 
   // 合計精算点
   const final=players.map((_,i)=>{
-    let v=raw[i]+yakPen[i]+sinkPen[i]+tobiPen[i];
+    let v=raw[i]+yakPen[i]+sinkPen[i]+tobiPen[i]+okaPen[i];
     if(i===top) v+=sinkPool;
     return v;
   });
@@ -451,18 +470,19 @@ function calculate(){
   let detHtml='';
   players.forEach((p,i)=>{
     const name=p.name||'P'+(i+1);
-    const base=((scores[i]-GENTEN)/1000).toFixed(1);
+    const base=((scores[i]-KIJUN)/1000).toFixed(1);
     const u=uma[rank[i]-1];
     const uStr=u!==0?(u>0?` ウマ+${u}`:` ウマ${u}`):'';
     const yv=yakPen[i];
     const yStr=yv!==0?(yv>0?` 焼受+${yv}`:` 焼${yv}`):'';
     const sStr=sinkPen[i]<0?` 沈${sinkPen[i]}`:'';
     const tStr=tobiPen[i]!==0?(tobiPen[i]>0?` 飛+${tobiPen[i]}`:` 飛${tobiPen[i]}`):'';
+    const okaStr=okaPen[i]!==0?(okaPen[i]>0?` オカ+${okaPen[i]}`:` オカ${okaPen[i]}`):'`';
     const bStr=(i===top&&sinkPool>0)?` 沈徴+${sinkPool}`:'';
     const pt=rounded[i];
     detHtml+=`<div class="detail-row">
       <span>${name}</span>
-      <span class="detail-val">${base}${uStr}${yStr}${sStr}${tStr}${bStr} = <b>${pt>0?'+':''}${pt}</b></span>
+      <span class="detail-val">${base}${uStr}${yStr}${sStr}${tStr}${okaStr}${bStr} = <b>${pt>0?'+':''}${pt}</b></span>
     </div>`;
   });
   document.getElementById('detail-rows').innerHTML=detHtml;
@@ -473,18 +493,43 @@ function calculate(){
 }
 
 function goBack(){
+  // 設定値をJS変数に退避（selectのDOMはリセットされないが念のため）
+  const umaVal = document.getElementById('sel-uma').value;
+  const yakVal = document.getElementById('sel-yak').value;
+  const okaVal = document.getElementById('sel-oka').value;
+
   document.getElementById('scr-result').style.display='none';
   document.getElementById('scr-input').style.display='block';
+
+  // selectの値を明示的に復元
+  document.getElementById('sel-uma').value = umaVal;
+  document.getElementById('sel-yak').value = yakVal;
+  document.getElementById('sel-oka').value = okaVal;
+
   window.scrollTo(0,0);
 }
 
 function reset(){
+  // 設定値を保持したままスコア・焼き鳥フラグだけリセット
+  const umaVal = document.getElementById('sel-uma').value;
+  const yakVal = document.getElementById('sel-yak').value;
+  const okaVal = document.getElementById('sel-oka').value;
+
   players=players.map(p=>({...p,score:'',yak:false}));
   tobiLoser=-1;
   tobiWinners=[];
-  goBack();
+
+  document.getElementById('scr-result').style.display='none';
+  document.getElementById('scr-input').style.display='block';
+
+  // selectの値を明示的に復元
+  document.getElementById('sel-uma').value = umaVal;
+  document.getElementById('sel-yak').value = yakVal;
+  document.getElementById('sel-oka').value = okaVal;
+
   renderPlayers();
   if(tobiOn) renderTobiButtons();
+  window.scrollTo(0,0);
 }
 
 function tick(){
