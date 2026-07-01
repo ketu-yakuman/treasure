@@ -11,195 +11,96 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;background:#0a2e1a;font-family:'Hiragino Sans','Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;color:#faf5e4;overscroll-behavior:none}
-
 #app{max-width:480px;margin:0 auto;min-height:100vh;padding:0 0 env(safe-area-inset-bottom)}
 
-/* HEADER */
-.hdr{
-  background:#0a2216;
-  padding:12px 16px 10px;
-  display:flex;align-items:center;gap:10px;
-  border-bottom:2px solid #d4ac0d;
-  position:sticky;top:0;z-index:10;
-}
+.hdr{background:#0a2216;padding:12px 16px 10px;display:flex;align-items:center;gap:10px;border-bottom:2px solid #d4ac0d;position:sticky;top:0;z-index:10;}
 .hdr-icon{font-size:24px}
 .hdr-title{font-size:18px;font-weight:600;letter-spacing:.5px;color:#faf5e4}
 .hdr-time{font-size:12px;color:#9fcfb0;margin-left:auto}
 
-/* BODY */
 .body{background:#1a6b45;min-height:calc(100vh - 56px);padding:12px}
 
-/* SETTINGS */
 .section-label{font-size:11px;color:#9fcfb0;font-weight:600;letter-spacing:.8px;margin-bottom:6px;margin-top:12px}
 .section-label:first-child{margin-top:0}
-
 .settings-row{display:flex;gap:8px;margin-bottom:4px}
 .setting-group{flex:1}
 
-select{
-  width:100%;padding:10px 12px;
-  background:#0f4a2e;border:1.5px solid #2d7a52;
-  color:#faf5e4;border-radius:10px;
-  font-size:14px;appearance:none;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239fcfb0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;
-  background-position:right 12px center;
-  padding-right:32px;
-}
+select{width:100%;padding:10px 12px;background:#0f4a2e;border:1.5px solid #2d7a52;color:#faf5e4;border-radius:10px;font-size:14px;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239fcfb0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
 
-.toggle-row{
-  display:flex;align-items:center;
-  background:#0f4a2e;border:1.5px solid #2d7a52;
-  padding:10px 14px;border-radius:10px;
-  cursor:pointer;user-select:none;
-}
+.toggle-row{display:flex;align-items:center;background:#0f4a2e;border:1.5px solid #2d7a52;padding:10px 14px;border-radius:10px;cursor:pointer;user-select:none;}
 .toggle-label{font-size:14px;color:#faf5e4}
-.toggle-sw{
-  width:44px;height:24px;background:#2d7a52;border-radius:12px;
-  position:relative;margin-left:auto;flex-shrink:0;
-  transition:background .2s;
-}
+.toggle-sw{width:44px;height:24px;background:#2d7a52;border-radius:12px;position:relative;margin-left:auto;flex-shrink:0;transition:background .2s;}
 .toggle-sw.on{background:#d4ac0d}
-.toggle-sw::after{
-  content:'';position:absolute;
-  width:20px;height:20px;background:#fff;border-radius:50%;
-  top:2px;left:2px;transition:left .2s;
-}
+.toggle-sw::after{content:'';position:absolute;width:20px;height:20px;background:#fff;border-radius:50%;top:2px;left:2px;transition:left .2s;}
 .toggle-sw.on::after{left:22px}
 
-/* PLAYERS */
-.player-card{
-  background:#0f4a2e;border:1.5px solid #2d7a52;
-  border-radius:12px;padding:12px 14px;margin-bottom:8px;
-}
+/* 飛ばしボーナス選択UI */
+.tobi-panel{background:#0f4a2e;border:1.5px solid #e67e22;border-radius:10px;padding:12px 14px;margin-bottom:4px;}
+.tobi-row{display:flex;gap:8px;margin-bottom:8px;align-items:center;}
+.tobi-row:last-child{margin-bottom:0}
+.tobi-lbl{font-size:13px;color:#9fcfb0;white-space:nowrap;flex-shrink:0;width:80px;}
+.player-sel-row{display:flex;gap:6px;flex:1}
+.psel-btn{flex:1;padding:8px 4px;border-radius:8px;border:1.5px solid #4aaa78;background:transparent;color:#9fcfb0;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:.15s;text-align:center;}
+.psel-btn.on{background:#e67e22;border-color:#e67e22;color:#fff;}
+.psel-btn.on2{background:#2471a3;border-color:#2471a3;color:#fff;}
+
+.player-card{background:#0f4a2e;border:1.5px solid #2d7a52;border-radius:12px;padding:12px 14px;margin-bottom:8px;}
 .player-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.player-num{
-  width:32px;height:32px;border-radius:50%;flex-shrink:0;
-  background:#0a2216;border:1.5px solid #d4ac0d;
-  display:flex;align-items:center;justify-content:center;
-  font-size:14px;font-weight:600;color:#d4ac0d;
-}
-.player-name{
-  flex:1;background:transparent;border:none;
-  border-bottom:1.5px solid #4aaa78;
-  color:#faf5e4;font-size:18px;font-weight:600;
-  padding:2px 4px;outline:none;
-  font-family:inherit;
-}
+.player-num{width:32px;height:32px;border-radius:50%;flex-shrink:0;background:#0a2216;border:1.5px solid #d4ac0d;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#d4ac0d;}
+.player-name{flex:1;background:transparent;border:none;border-bottom:1.5px solid #4aaa78;color:#faf5e4;font-size:18px;font-weight:600;padding:2px 4px;outline:none;font-family:inherit;}
 .player-name::placeholder{color:#4a7a5c}
-.yak-btn{
-  font-size:12px;padding:6px 10px;border-radius:8px;
-  border:1.5px solid #4aaa78;background:transparent;
-  color:#9fcfb0;cursor:pointer;white-space:nowrap;
-  font-family:inherit;transition:.15s;
-}
+.yak-btn{font-size:12px;padding:6px 10px;border-radius:8px;border:1.5px solid #4aaa78;background:transparent;color:#9fcfb0;cursor:pointer;white-space:nowrap;font-family:inherit;transition:.15s;}
 .yak-btn.on{background:#c0392b;border-color:#c0392b;color:#fff;font-weight:600}
 
-.score-wrap{
-  display:flex;align-items:center;
-  background:#1a6b45;border:2px solid #4aaa78;
-  border-radius:10px;padding:8px 14px;
-}
-.score-input{
-  flex:1;background:transparent;border:none;outline:none;
-  color:#faf5e4;font-size:28px;font-weight:600;
-  text-align:right;
-  -moz-appearance:textfield;
-  font-family:inherit;
-}
-.score-input::-webkit-inner-spin-button,
-.score-input::-webkit-outer-spin-button{-webkit-appearance:none}
+.score-wrap{display:flex;align-items:center;background:#1a6b45;border:2px solid #4aaa78;border-radius:10px;padding:8px 14px;}
+.score-input{flex:1;background:transparent;border:none;outline:none;color:#faf5e4;font-size:28px;font-weight:600;text-align:right;-moz-appearance:textfield;font-family:inherit;}
+.score-input::-webkit-inner-spin-button,.score-input::-webkit-outer-spin-button{-webkit-appearance:none}
 .score-input::placeholder{color:#4a7a5c;font-size:20px}
 .score-unit{font-size:13px;color:#9fcfb0;margin-left:6px;padding-top:4px}
 
-/* TOTAL */
-.total-row{
-  display:flex;justify-content:space-between;align-items:center;
-  background:#0a2216;border-radius:10px;padding:10px 16px;
-  margin:12px 0 6px;
-}
+.total-row{display:flex;justify-content:space-between;align-items:center;background:#0a2216;border-radius:10px;padding:10px 16px;margin:12px 0 6px;}
 .total-lbl{font-size:13px;color:#9fcfb0}
 .total-val{font-size:20px;font-weight:600}
 .ok{color:#4adc8a}.ng{color:#ff6b6b}
-.warn{
-  background:#5a1010;border:1.5px solid #c0392b;
-  border-radius:10px;padding:10px 14px;
-  font-size:13px;color:#ffaaaa;text-align:center;margin-bottom:8px;
-}
+.warn{background:#5a1010;border:1.5px solid #c0392b;border-radius:10px;padding:10px 14px;font-size:13px;color:#ffaaaa;text-align:center;margin-bottom:8px;}
 
-/* CALC BTN */
-.calc-btn{
-  width:100%;padding:18px;border-radius:12px;border:none;
-  background:#d4ac0d;color:#1a0a00;
-  font-size:20px;font-weight:700;cursor:pointer;
-  letter-spacing:2px;margin-top:8px;
-  font-family:inherit;transition:.15s;
-  -webkit-font-smoothing:antialiased;
-}
+.calc-btn{width:100%;padding:18px;border-radius:12px;border:none;background:#d4ac0d;color:#1a0a00;font-size:20px;font-weight:700;cursor:pointer;letter-spacing:2px;margin-top:8px;font-family:inherit;transition:.15s;-webkit-font-smoothing:antialiased;}
 .calc-btn:active{transform:scale(.97);background:#b8960a}
-.calc-btn:disabled{background:#4a4a2a;color:#888;cursor:not-allowed}
 
-/* RESULT */
-.result-hdr{
-  display:flex;justify-content:space-between;align-items:center;
-  margin-bottom:12px;
-}
+.result-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
 .result-title{font-size:18px;font-weight:700;color:#d4ac0d}
-.back-btn{
-  padding:8px 14px;border-radius:8px;border:1.5px solid #4aaa78;
-  background:transparent;color:#9fcfb0;font-size:14px;cursor:pointer;
-  font-family:inherit;
-}
+.back-btn{padding:8px 14px;border-radius:8px;border:1.5px solid #4aaa78;background:transparent;color:#9fcfb0;font-size:14px;cursor:pointer;font-family:inherit;}
 
-.rank-card{
-  background:#0f4a2e;border:1.5px solid #2d7a52;
-  border-radius:12px;padding:12px 16px;
-  display:flex;align-items:center;gap:12px;margin-bottom:8px;
-}
+.rank-card{background:#0f4a2e;border:1.5px solid #2d7a52;border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:8px;}
 .rank-card.r1{border-color:#d4ac0d;background:#1a3a1a}
-.rank-badge{
-  font-size:24px;flex-shrink:0;width:36px;text-align:center;
-}
+.rank-badge{font-size:24px;flex-shrink:0;width:36px;text-align:center;}
 .rank-name{font-size:18px;font-weight:600;flex:1}
 .rank-pt{font-size:32px;font-weight:700;font-variant-numeric:tabular-nums}
 .rank-pt.pos{color:#4adc8a}
 .rank-pt.neg{color:#ff6b6b}
 .rank-pt.zer{color:#9fcfb0}
 
-.pay-section,.detail-section{
-  background:#0f4a2e;border:1.5px solid #2d7a52;
-  border-radius:12px;padding:12px 16px;margin-bottom:10px;
-}
+.pay-section,.detail-section{background:#0f4a2e;border:1.5px solid #2d7a52;border-radius:12px;padding:12px 16px;margin-bottom:10px;}
 .sub-title{font-size:12px;color:#9fcfb0;font-weight:600;letter-spacing:.8px;margin-bottom:8px}
-.pay-row{
-  display:flex;align-items:center;gap:8px;
-  padding:8px 0;border-bottom:1px solid #1a5a35;font-size:15px;
-}
+.pay-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #1a5a35;font-size:15px;}
 .pay-row:last-child{border-bottom:none}
 .pay-from{font-weight:600;color:#faf5e4;flex-shrink:0}
 .pay-arrow{color:#d4ac0d;font-size:18px;flex-shrink:0}
 .pay-to{font-weight:600;color:#4adc8a;flex-shrink:0}
 .pay-amt{margin-left:auto;font-weight:600;font-variant-numeric:tabular-nums;color:#faf5e4}
 
-.detail-row{
-  display:flex;justify-content:space-between;align-items:center;
-  padding:5px 0;border-bottom:1px solid #1a5a35;font-size:13px;color:#9fcfb0;
-}
+.detail-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #1a5a35;font-size:13px;color:#9fcfb0;}
 .detail-row:last-child{border-bottom:none}
 .detail-val{color:#faf5e4;font-weight:600}
 
-.reset-btn{
-  width:100%;padding:14px;border-radius:12px;border:1.5px solid #2d7a52;
-  background:#0f4a2e;color:#9fcfb0;font-size:16px;cursor:pointer;
-  font-family:inherit;transition:.15s;
-}
+.reset-btn{width:100%;padding:14px;border-radius:12px;border:1.5px solid #2d7a52;background:#0f4a2e;color:#9fcfb0;font-size:16px;cursor:pointer;font-family:inherit;transition:.15s;}
 .reset-btn:active{transform:scale(.97)}
 </style>
 </head>
 <body>
 <div id="app">
 
-<!-- ===== 入力画面 ===== -->
+<!-- 入力画面 -->
 <div id="scr-input">
   <div class="hdr">
     <span class="hdr-icon">🀄</span>
@@ -231,6 +132,29 @@ select{
       <span class="toggle-label">沈みボーナス（原点未満 -10,000）</span>
       <div class="toggle-sw" id="sink-sw"></div>
     </div>
+    <div class="toggle-row" onclick="toggleTobi()" style="margin-bottom:4px">
+      <span class="toggle-label">飛ばしボーナス</span>
+      <div class="toggle-sw" id="tobi-sw"></div>
+    </div>
+
+    <!-- 飛ばしボーナス入力パネル -->
+    <div class="tobi-panel" id="tobi-panel" style="display:none">
+      <div class="tobi-row">
+        <span class="tobi-lbl">場</span>
+        <div class="player-sel-row">
+          <button class="psel-btn on" id="ba-east" onclick="setBa('east')">東場（-20,000）</button>
+          <button class="psel-btn" id="ba-south" onclick="setBa('south')">南場以降（-10,000）</button>
+        </div>
+      </div>
+      <div class="tobi-row">
+        <span class="tobi-lbl">飛ばされた</span>
+        <div class="player-sel-row" id="tobi-loser-btns"></div>
+      </div>
+      <div class="tobi-row">
+        <span class="tobi-lbl">飛ばした</span>
+        <div class="player-sel-row" id="tobi-winner-btns"></div>
+      </div>
+    </div>
 
     <div class="section-label">持ち点入力</div>
     <div id="players-wrap"></div>
@@ -240,11 +164,11 @@ select{
       <span class="total-val" id="total-disp">0点</span>
     </div>
     <div class="warn" id="warn" style="display:none">⚠ 合計が 105,000点 になるよう確認してください</div>
-    <button class="calc-btn" id="calc-btn" onclick="calculate()">精　　算</button>
+    <button class="calc-btn" onclick="calculate()">精　　算</button>
   </div>
 </div>
 
-<!-- ===== 結果画面 ===== -->
+<!-- 結果画面 -->
 <div id="scr-result" style="display:none">
   <div class="hdr">
     <span class="hdr-icon">🀄</span>
@@ -269,13 +193,17 @@ select{
 </div>
 
 </div>
-
 <script>
 const GENTEN = 35000;
 const TOTAL_REQ = 105000;
 const SINK_PT = 10000;
 
 let sinkOn = false;
+let tobiOn = false;
+let tobiLoser = -1;      // 飛ばされたプレイヤーindex
+let tobiWinners = [];    // 飛ばしたプレイヤーindex配列（1〜2人）
+let tobiRound = 'east';  // 'east' or 'south'
+
 let players = [
   {name:'A', score:'', yak:false},
   {name:'B', score:'', yak:false},
@@ -283,8 +211,8 @@ let players = [
 ];
 
 function toHalf(s){
-  return s.replace(/[０-９－\-]/g, c=>{
-    if(c==='－'||c==='-') return '-';
+  return s.replace(/[０-９－]/g, c=>{
+    if(c==='－') return '-';
     return String.fromCharCode(c.charCodeAt(0)-0xFEE0);
   });
 }
@@ -294,19 +222,67 @@ function toggleSink(){
   document.getElementById('sink-sw').classList.toggle('on',sinkOn);
 }
 
+function toggleTobi(){
+  tobiOn=!tobiOn;
+  document.getElementById('tobi-sw').classList.toggle('on',tobiOn);
+  document.getElementById('tobi-panel').style.display=tobiOn?'block':'none';
+  if(tobiOn) renderTobiButtons();
+}
+
+function setBa(ba){
+  tobiRound=ba;
+  document.getElementById('ba-east').classList.toggle('on', ba==='east');
+  document.getElementById('ba-south').classList.toggle('on', ba==='south');
+}
+
+function renderTobiButtons(){
+  const names=players.map((p,i)=>p.name||'P'+(i+1));
+
+  // 飛ばされた（1人選択）
+  let lHtml='';
+  names.forEach((n,i)=>{
+    lHtml+=`<button class="psel-btn${tobiLoser===i?' on':''}" onclick="setTobiLoser(${i})">${n}</button>`;
+  });
+  document.getElementById('tobi-loser-btns').innerHTML=lHtml;
+
+  // 飛ばした（複数選択可・ただし飛ばされた人は選べない）
+  let wHtml='';
+  names.forEach((n,i)=>{
+    const isWin=tobiWinners.includes(i);
+    const isLoser=tobiLoser===i;
+    wHtml+=`<button class="psel-btn${isWin?' on2':''}${isLoser?' on':''}" 
+      onclick="toggleTobiWinner(${i})" ${isLoser?'disabled':''} style="${isLoser?'opacity:.3':''}">${n}</button>`;
+  });
+  document.getElementById('tobi-winner-btns').innerHTML=wHtml;
+}
+
+function setTobiLoser(i){
+  tobiLoser=i;
+  // 飛ばされた人が飛ばした人に入っていたら除外
+  tobiWinners=tobiWinners.filter(w=>w!==i);
+  renderTobiButtons();
+}
+
+function toggleTobiWinner(i){
+  if(tobiLoser===i) return;
+  const idx=tobiWinners.indexOf(i);
+  if(idx>=0) tobiWinners.splice(idx,1);
+  else tobiWinners.push(i);
+  renderTobiButtons();
+}
+
 function getYakVal(){return parseInt(document.getElementById('sel-yak').value)||0}
 function getUma(){return document.getElementById('sel-uma').value.split(',').map(Number)}
 
 function renderPlayers(){
-  const showYak = getYakVal()>0;
+  const showYak=getYakVal()>0;
   let html='';
   players.forEach((p,i)=>{
-    html+=`
-    <div class="player-card">
+    html+=`<div class="player-card">
       <div class="player-top">
         <div class="player-num">${i+1}</div>
         <input class="player-name" id="nm-${i}" value="${p.name}" placeholder="名前"
-          oninput="players[${i}].name=this.value" maxlength="6">
+          oninput="players[${i}].name=this.value;if(tobiOn)renderTobiButtons()" maxlength="6">
         ${showYak?`<button class="yak-btn${p.yak?' on':''}" onclick="toggleYak(${i})">${p.yak?'🐔 焼き鳥':'焼き鳥?'}</button>`:''}
       </div>
       <div class="score-wrap">
@@ -362,21 +338,52 @@ function calculate(){
   sorted.forEach((o,r)=>rank[o.i]=r+1);
   const top=sorted[0].i;
 
-  // 素点換算 + ウマ
+  // 素点換算+ウマ
   const raw=scores.map((s,i)=>(s-GENTEN)/1000+uma[rank[i]-1]);
 
   // 焼き鳥
-  const yakPen=players.map(p=>p.yak&&yakVal>0?-(yakVal/1000):0);
-  const yakPool=yakPen.reduce((a,b)=>a+(-b),0);
+  // 焼き鳥プレイヤー → 焼き鳥でないプレイヤーへ均等支払い
+  const nonYakIdx=players.map((p,i)=>i).filter(i=>!players[i].yak);
+  const yakPen=players.map(()=>0);
+  if(yakVal>0){
+    players.forEach((p,i)=>{
+      if(!p.yak) return;
+      // 焼き鳥プレイヤーiは減点
+      yakPen[i]-=yakVal/1000;
+      // 焼き鳥でないプレイヤーで均等受け取り
+      const recv=nonYakIdx.filter(j=>j!==i); // 自分以外の非焼き鳥
+      // 実際の受け取り対象：焼き鳥でない全員
+      const recvList=nonYakIdx;
+      if(recvList.length>0){
+        const perRecv=(yakVal/1000)/recvList.length;
+        recvList.forEach(j=>{ yakPen[j]+=perRecv; });
+      }
+    });
+  }
 
-  // 沈みボーナス
+  // 沈みボーナス（1着総取りはそのまま）
   const sinkPen=sinkOn?scores.map(s=>s<GENTEN?-(SINK_PT/1000):0):players.map(()=>0);
   const sinkPool=sinkPen.reduce((a,b)=>a+(-b),0);
 
-  // 合計
+  // 飛ばしボーナス（精算点単位：千点）
+  const tobiBase=(tobiRound==='east'?20000:10000)/1000; // 東場20、南場10
+  const tobiPen=players.map(()=>0);
+  let tobiDetail='';
+  if(tobiOn && tobiLoser>=0 && tobiWinners.length>0){
+    // 飛ばされた人は合計tobiBase減点
+    tobiPen[tobiLoser]=-tobiBase;
+    // 飛ばした人は頭割りで受け取り
+    const perWinner=tobiBase/tobiWinners.length;
+    tobiWinners.forEach(wi=>{tobiPen[wi]+=perWinner;});
+    const loserName=players[tobiLoser].name||'P'+(tobiLoser+1);
+    const winNames=tobiWinners.map(wi=>players[wi].name||'P'+(wi+1)).join('・');
+    tobiDetail=`飛ばし(${loserName}→${winNames})`;
+  }
+
+  // 合計精算点
   const final=players.map((_,i)=>{
-    let v=raw[i]+yakPen[i]+sinkPen[i];
-    if(i===top) v+=yakPool+sinkPool;
+    let v=raw[i]+yakPen[i]+sinkPen[i]+tobiPen[i];
+    if(i===top) v+=sinkPool;
     return v;
   });
 
@@ -390,7 +397,6 @@ function calculate(){
     rounded[adj]-=sum;
   }
 
-  // --- 結果描画 ---
   // ランクカード
   let rcHtml='';
   sorted.forEach((o,r)=>{
@@ -407,7 +413,7 @@ function calculate(){
   });
   document.getElementById('rank-cards').innerHTML=rcHtml;
 
-  // 支払い
+  // 支払い（精算点→実際の点数に戻して表示）
   const neg=rounded.map((v,i)=>({i,v,name:players[i].name||'P'+(i+1)})).filter(p=>p.v<0).sort((a,b)=>a.v-b.v);
   const pos=rounded.map((v,i)=>({i,v,name:players[i].name||'P'+(i+1)})).filter(p=>p.v>0).sort((a,b)=>b.v-a.v);
   const pr=pos.map(p=>({...p,rem:p.v}));
@@ -443,13 +449,15 @@ function calculate(){
     const base=((scores[i]-GENTEN)/1000).toFixed(1);
     const u=uma[rank[i]-1];
     const uStr=u!==0?(u>0?` ウマ+${u}`:` ウマ${u}`):'';
-    const yStr=yakPen[i]<0?` 焼${yakPen[i]}`:'';
+    const yv=yakPen[i];
+    const yStr=yv!==0?(yv>0?` 焼受+${yv}`:` 焼${yv}`):'';
     const sStr=sinkPen[i]<0?` 沈${sinkPen[i]}`:'';
-    const bStr=(i===top&&(yakPool+sinkPool)>0)?` 徴+${yakPool+sinkPool}`:'';
+    const tStr=tobiPen[i]!==0?(tobiPen[i]>0?` 飛+${tobiPen[i]}`:` 飛${tobiPen[i]}`):'';
+    const bStr=(i===top&&sinkPool>0)?` 沈徴+${sinkPool}`:'';
     const pt=rounded[i];
     detHtml+=`<div class="detail-row">
       <span>${name}</span>
-      <span class="detail-val">${base}${uStr}${yStr}${sStr}${bStr} = <b>${pt>0?'+':''}${pt}</b></span>
+      <span class="detail-val">${base}${uStr}${yStr}${sStr}${tStr}${bStr} = <b>${pt>0?'+':''}${pt}</b></span>
     </div>`;
   });
   document.getElementById('detail-rows').innerHTML=detHtml;
@@ -467,18 +475,19 @@ function goBack(){
 
 function reset(){
   players=players.map(p=>({...p,score:'',yak:false}));
+  tobiLoser=-1;
+  tobiWinners=[];
   goBack();
   renderPlayers();
+  if(tobiOn) renderTobiButtons();
 }
 
-// 時刻
 function tick(){
   const n=new Date();
   const el=document.getElementById('hdr-time');
   if(el)el.textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
 }
 
-// 焼き鳥選択変更時に再描画
 document.getElementById('sel-yak').addEventListener('change',renderPlayers);
 
 tick();
