@@ -103,6 +103,40 @@ select{width:100%;padding:10px 12px;background:#0f4a2e;border:1.5px solid #2d7a5
 .detail-row:last-child{border-bottom:none}
 .detail-val{color:#faf5e4;font-weight:600}
 
+/* 内訳縦表示（3列） */
+.detail-cols{display:flex;gap:6px;}
+.detail-col{flex:1;min-width:0;}
+.dcol-name{
+  font-size:13px;font-weight:700;color:#faf5e4;
+  padding-bottom:5px;margin-bottom:5px;
+  border-bottom:1px solid #4aaa78;
+  text-align:center;
+}
+.dcol-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:3px 0;border-bottom:1px dashed #1a5a35;
+  font-size:11px;
+}
+.dcol-row:last-child{border-bottom:none;padding-bottom:0}
+.dcol-key{color:#9fcfb0;flex-shrink:0;margin-right:4px;}
+.dcol-num{font-variant-numeric:tabular-nums;text-align:right;font-weight:600;}
+.dcol-num.pos{color:#4adc8a}
+.dcol-num.neg{color:#ff6b6b}
+.dcol-num.zer{color:#9fcfb0}
+.dcol-divider{
+  border:none;border-top:1.5px solid #4aaa78;
+  margin:5px 0 4px;
+}
+.dcol-total{
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:13px;font-weight:700;
+}
+.dcol-total-lbl{color:#9fcfb0}
+.dcol-total-num{font-variant-numeric:tabular-nums;}
+.dcol-total-num.pos{color:#4adc8a}
+.dcol-total-num.neg{color:#ff6b6b}
+.dcol-total-num.zer{color:#9fcfb0}
+
 .reset-btn{width:100%;padding:14px;border-radius:12px;border:1.5px solid #2d7a52;background:#0f4a2e;color:#9fcfb0;font-size:16px;cursor:pointer;font-family:inherit;transition:.15s;}
 .reset-btn:active{transform:scale(.97)}
 
@@ -629,25 +663,42 @@ function calculate(){
   }
   document.getElementById('pay-rows').innerHTML=payHtml;
 
-  // 内訳
-  let detHtml='';
+  // 内訳（縦表示・3列横並び）
+  let detHtml='<div class="detail-cols">';
   players.forEach((p,i)=>{
     const name=p.name||'P'+(i+1);
-    const base=((scores[i]-KIJUN)/1000).toFixed(1);
+    const base=parseFloat(((scores[i]-KIJUN)/1000).toFixed(1));
     const u=uma[rank[i]-1];
-    const uStr=u!==0?(u>0?` ウマ+${u}`:` ウマ${u}`):'';
     const yv=yakPen[i];
-    const yStr=yv!==0?(yv>0?` 焼受+${yv}`:` 焼${yv}`):'';
-    const sStr=sinkPen[i]<0?` 沈${sinkPen[i]}`:'';
-    const tStr=tobiPen[i]!==0?(tobiPen[i]>0?` 飛+${tobiPen[i]}`:` 飛${tobiPen[i]}`):'';
-    const okaStr=okaPen[i]!==0?(okaPen[i]>0?` オカ+${okaPen[i]}`:` オカ${okaPen[i]}`):'`';
-    const bStr=(i===top&&sinkPool>0)?` 沈徴+${sinkPool}`:'';
+    const sv=sinkPen[i];
+    const tv=tobiPen[i];
+    const ov=okaPen[i];
+    const bv=(i===top&&sinkPool>0)?sinkPool:0;
     const pt=rounded[i];
-    detHtml+=`<div class="detail-row">
-      <span>${name}</span>
-      <span class="detail-val">${base}${uStr}${yStr}${sStr}${tStr}${okaStr}${bStr} = <b>${pt>0?'+':''}${pt}</b></span>
+    const ptCls=pt>0?'pos':pt<0?'neg':'zer';
+    const numCls=v=>v>0?'pos':v<0?'neg':'zer';
+    const rows=[
+      {key:'素点', val:base},
+      {key:'ウマ', val:u},
+      {key:'焼鳥', val:yv},
+      {key:'沈み', val:sv},
+      {key:'飛', val:tv},
+      {key:'オカ', val:ov},
+      {key:'沈徴', val:bv},
+    ].filter(r=>r.val!==0);
+    let rowsHtml='';
+    rows.forEach(r=>{
+      const s=(r.val>0?'+':'')+r.val;
+      rowsHtml+=`<div class="dcol-row"><span class="dcol-key">${r.key}</span><span class="dcol-num ${numCls(r.val)}">${s}</span></div>`;
+    });
+    detHtml+=`<div class="detail-col">
+      <div class="dcol-name">${name}</div>
+      ${rowsHtml}
+      <hr class="dcol-divider">
+      <div class="dcol-total"><span class="dcol-total-lbl">計</span><span class="dcol-total-num ${ptCls}">${pt>0?'+':''}${pt}</span></div>
     </div>`;
   });
+  detHtml+='</div>';
   document.getElementById('detail-rows').innerHTML=detHtml;
 
   document.getElementById('scr-input').style.display='none';
