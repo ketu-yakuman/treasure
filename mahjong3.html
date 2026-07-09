@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="麻雀精算">
+<meta name="theme-color" content="#0f4a2e">
+<title>三人麻雀 精算</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#0a2e1a;font-family:'Hiragino Sans','Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;color:#faf5e4;overscroll-behavior:none}
+#app{max-width:480px;margin:0 auto;min-height:100vh;padding:0 0 env(safe-area-inset-bottom)}
+
+.hdr{background:#0a2216;padding:12px 16px 10px;display:flex;align-items:center;gap:10px;border-bottom:2px solid #d4ac0d;position:sticky;top:0;z-index:10;}
+.hdr-icon{font-size:24px}
+.hdr-title{font-size:18px;font-weight:600;letter-spacing:.5px;color:#faf5e4}
+.hdr-time{font-size:12px;color:#9fcfb0;margin-left:auto}
+
+.body{background:#1a6b45;min-height:calc(100vh - 56px);padding:12px}
+
+.section-label{font-size:11px;color:#9fcfb0;font-weight:600;letter-spacing:.8px;margin-bottom:6px;margin-top:12px}
+.section-label:first-child{margin-top:0}
+.settings-row{display:flex;gap:8px;margin-bottom:4px}
+.setting-group{flex:1}
+
+select{width:100%;padding:10px 12px;background:#0f4a2e;border:1.5px solid #2d7a52;color:#faf5e4;border-radius:10px;font-size:14px;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239fcfb0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
+
+.toggle-row{display:flex;align-items:center;background:#0f4a2e;border:1.5px solid #2d7a52;padding:10px 14px;border-radius:10px;cursor:pointer;user-select:none;}
+.toggle-label{font-size:14px;color:#faf5e4}
+.toggle-sw{width:44px;height:24px;background:#2d7a52;border-radius:12px;position:relative;margin-left:auto;flex-shrink:0;transition:background .2s;}
+.toggle-sw.on{background:#d4ac0d}
+.toggle-sw::after{content:'';position:absolute;width:20px;height:20px;background:#fff;border-radius:50%;top:2px;left:2px;transition:left .2s;}
+.toggle-sw.on::after{left:22px}
+
+/* 飛ばしボーナス選択UI */
+.tobi-panel{background:#0f4a2e;border:1.5px solid #e67e22;border-radius:10px;padding:12px 14px;margin-bottom:4px;}
+.tobi-row{display:flex;gap:8px;margin-bottom:8px;align-items:center;}
+.tobi-row:last-child{margin-bottom:0}
+.tobi-lbl{font-size:13px;color:#9fcfb0;white-space:nowrap;flex-shrink:0;width:80px;}
+.player-sel-row{display:flex;gap:6px;flex:1}
+.psel-btn{flex:1;padding:8px 4px;border-radius:8px;border:1.5px solid #4aaa78;background:transparent;color:#9fcfb0;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:.15s;text-align:center;}
+.psel-btn.on{background:#e67e22;border-color:#e67e22;color:#fff;}
+.psel-btn.on2{background:#2471a3;border-color:#2471a3;color:#fff;}
+
+.player-card{background:#0f4a2e;border:1.5px solid #2d7a52;border-radius:12px;padding:12px 12px;margin-bottom:8px;overflow:hidden;}
+.player-top{display:flex;align-items:center;gap:8px;margin-bottom:10px;min-width:0;}
+.player-num{width:32px;height:32px;border-radius:50%;flex-shrink:0;background:#0a2216;border:1.5px solid #d4ac0d;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#d4ac0d;}
+.player-name{flex:1;min-width:0;background:transparent;border:none;border-bottom:1.5px solid #4aaa78;color:#faf5e4;font-size:18px;font-weight:600;padding:2px 4px;outline:none;font-family:inherit;width:100%;}
+.player-name::placeholder{color:#4a7a5c}
+.yak-btn{font-size:13px;padding:6px 10px;border-radius:8px;border:1.5px solid #4aaa78;background:transparent;color:#9fcfb0;cursor:pointer;white-space:nowrap;font-family:inherit;transition:.15s;flex-shrink:0;}
+.yak-btn.on{background:#c0392b;border-color:#c0392b;color:#fff;font-weight:600}
+
+.score-wrap{display:flex;align-items:center;background:#1a6b45;border:2px solid #4aaa78;border-radius:10px;padding:6px 10px;width:100%;gap:6px;}
+.minus-btn{
+  width:40px;height:40px;border-radius:8px;flex-shrink:0;
+  background:#0f4a2e;border:1.5px solid #4aaa78;
+  color:#faf5e4;font-size:22px;font-weight:300;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-family:inherit;transition:.15s;user-select:none;
+}
+.minus-btn:active{background:#c0392b;border-color:#c0392b;}
+.score-input{flex:1;min-width:0;background:transparent;border:none;outline:none;color:#faf5e4;font-size:28px;font-weight:600;text-align:right;-moz-appearance:textfield;font-family:inherit;width:100%;}
+.score-input::-webkit-inner-spin-button,.score-input::-webkit-outer-spin-button{-webkit-appearance:none}
+.score-input::placeholder{color:#4a7a5c;font-size:20px}
+.score-unit{font-size:13px;color:#9fcfb0;margin-left:2px;padding-top:4px;flex-shrink:0;}
+
+.total-row{display:flex;justify-content:space-between;align-items:center;background:#0a2216;border-radius:10px;padding:10px 16px;margin:12px 0 6px;}
+.total-lbl{font-size:13px;color:#9fcfb0}
+.total-val{font-size:20px;font-weight:600}
+.ok{color:#4adc8a}.ng{color:#ff6b6b}
+.warn{background:#5a1010;border:1.5px solid #c0392b;border-radius:10px;padding:10px 14px;font-size:13px;color:#ffaaaa;text-align:center;margin-bottom:8px;}
+
+.calc-btn{width:100%;padding:18px;border-radius:12px;border:none;background:#d4ac0d;color:#1a0a00;font-size:20px;font-weight:700;cursor:pointer;letter-spacing:2px;margin-top:8px;font-family:inherit;transition:.15s;-webkit-font-smoothing:antialiased;}
+.calc-btn:active{transform:scale(.97);background:#b8960a}
+
+.result-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.result-title{font-size:18px;font-weight:700;color:#d4ac0d}
+.back-btn{padding:8px 14px;border-radius:8px;border:1.5px solid #4aaa78;background:transparent;color:#9fcfb0;font-size:14px;cursor:pointer;font-family:inherit;}
+
+.rank-card{background:#0f4a2e;border:1.5px solid #2d7a52;border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+.rank-card.r1{border-color:#d4ac0d;background:#1a3a1a}
+.rank-badge{font-size:24px;flex-shrink:0;width:36px;text-align:center;}
+.rank-info{flex:1;min-width:0;}
+.rank-name{font-size:18px;font-weight:600;color:#faf5e4;}
+.rank-score-raw{font-size:12px;color:#9fcfb0;margin-top:2px;}
+.rank-pt{font-size:32px;font-weight:700;font-variant-numeric:tabular-nums;flex-shrink:0;}
+.rank-pt.pos{color:#4adc8a}
+.rank-pt.neg{color:#ff6b6b}
+.rank-pt.zer{color:#9fcfb0}
+
+.pay-section,.detail-section{background:#0f4a2e;border:1.5px solid #2d7a52;border-radius:12px;padding:12px 16px;margin-bottom:10px;}
+.sub-title{font-size:12px;color:#9fcfb0;font-weight:600;letter-spacing:.8px;margin-bottom:8px}
+.pay-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #1a5a35;font-size:15px;}
+.pay-row:last-child{border-bottom:none}
+.pay-from{font-weight:600;color:#faf5e4;flex-shrink:0}
+.pay-arrow{color:#d4ac0d;font-size:18px;flex-shrink:0}
+.pay-to{font-weight:600;color:#4adc8a;flex-shrink:0}
+.pay-amt{margin-left:auto;font-weight:600;font-variant-numeric:tabular-nums;color:#faf5e4}
+
+.detail-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #1a5a35;font-size:13px;color:#9fcfb0;}
+.detail-row:last-child{border-bottom:none}
+.detail-val{color:#faf5e4;font-weight:600}
+
+/* 内訳縦表示（3列） */
+.detail-cols{display:flex;gap:6px;}
+.detail-col{flex:1;min-width:0;}
+.dcol-name{
+  font-size:13px;font-weight:700;color:#faf5e4;
+  padding-bottom:5px;margin-bottom:5px;
+  border-bottom:1px solid #4aaa78;
+  text-align:center;
+}
+.dcol-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:3px 0;border-bottom:1px dashed #1a5a35;
+  font-size:11px;
+}
+.dcol-row:last-child{border-bottom:none;padding-bottom:0}
+.dcol-key{color:#9fcfb0;flex-shrink:0;margin-right:4px;}
+.dcol-num{font-variant-numeric:tabular-nums;text-align:right;font-weight:600;}
+.dcol-num.pos{color:#4adc8a}
+.dcol-num.neg{color:#ff6b6b}
+.dcol-num.zer{color:#9fcfb0}
+.dcol-divider{
+  border:none;border-top:1.5px solid #4aaa78;
+  margin:5px 0 4px;
+}
+.dcol-total{
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:13px;font-weight:700;
+}
+.dcol-total-lbl{color:#9fcfb0}
+.dcol-total-num{font-variant-numeric:tabular-nums;}
+.dcol-total-num.pos{color:#4adc8a}
+.dcol-total-num.neg{color:#ff6b6b}
+.dcol-total-num.zer{color:#9fcfb0}
+
+.reset-btn{width:100%;padding:14px;border-radius:12px;border:1.5px solid #2d7a52;background:#0f4a2e;color:#9fcfb0;font-size:16px;cursor:pointer;font-family:inherit;transition:.15s;}
+.reset-btn:active{transform:scale(.97)}
+.hdr-back{
+  color:#9fcfb0;font-size:18px;text-decoration:none;
+  padding:2px 6px;border-radius:6px;
+  border:1.5px solid #4aaa78;line-height:1;
+  flex-shrink:0;
+}
+
+/* ルールモーダル */
+.rule-help-btn{
+  background:transparent;border:1.5px solid #4aaa78;
+  color:#9fcfb0;border-radius:50%;
+  width:30px;height:30px;font-size:16px;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  margin-left:8px;flex-shrink:0;font-family:inherit;
+}
+.modal-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.75);z-index:100;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+}
+.modal-overlay.open{display:block}
+.modal-box{
+  background:#0f4a2e;border:2px solid #d4ac0d;
+  border-radius:16px;margin:16px;padding:0;
+  overflow:hidden;
+}
+.modal-hdr{
+  background:#0a2216;padding:14px 16px;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:2px solid #d4ac0d;
+  position:sticky;top:0;z-index:1;
+}
+.modal-title{font-size:16px;font-weight:700;color:#d4ac0d}
+.modal-close{
+  background:transparent;border:1.5px solid #4aaa78;
+  color:#9fcfb0;border-radius:50%;
+  width:30px;height:30px;font-size:18px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-family:inherit;
+}
+.modal-body{padding:12px}
+.m-section{
+  background:#0a2216;border:1px solid #2d7a52;
+  border-radius:10px;padding:10px 12px;margin-bottom:8px;
+}
+.m-section:last-child{margin-bottom:0}
+.m-stitle{
+  font-size:13px;font-weight:700;color:#d4ac0d;
+  margin-bottom:8px;padding-bottom:6px;
+  border-bottom:1px solid #2d7a52;
+}
+.m-row{
+  display:flex;gap:8px;padding:4px 0;
+  border-bottom:1px solid #1a5a35;font-size:12px;line-height:1.6;
+}
+.m-row:last-child{border-bottom:none;padding-bottom:0}
+.m-key{color:#9fcfb0;flex-shrink:0;min-width:88px;font-size:11px;}
+.m-val{color:#faf5e4}
+.m-val b{color:#4adc8a}
+.m-val .neg{color:#ff6b6b}
+.m-example{
+  font-size:11px;color:#9fcfb0;
+  border-left:2px solid #2d7a52;
+  padding:4px 8px;margin-top:6px;line-height:1.7;
+}
+.m-example span{color:#faf5e4}
+.m-url{
+  text-align:center;font-size:11px;color:#4a7a5c;
+  margin-top:4px;padding:4px;
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- 入力画面 -->
+<div id="scr-input">
+  <div class="hdr">
+    <a href="index.html" class="hdr-back">＜</a>
+    <span class="hdr-icon">🀄</span>
+    <span class="hdr-title">三人麻雀 精算</span>
+    <span class="hdr-time" id="hdr-time"></span>
+    <button class="rule-help-btn" onclick="openRule()">?</button>
+  </div>
+  <div class="body">
+
+    <div class="section-label">設定</div>
+    <div class="settings-row">
+      <div class="setting-group">
+        <select id="sel-uma">
+          <option value="0,0,0">ウマ：なし</option>
+          <option value="10,5,-15" selected>ウマ：5-10</option>
+          <option value="15,0,-15">ウマ：15-0</option>
+          <option value="20,10,-30">ウマ：10-20</option>
+        </select>
+      </div>
+      <div class="setting-group">
+        <select id="sel-yak">
+          <option value="0">焼き鳥：なし</option>
+          <option value="10000" selected>焼き鳥：10,000</option>
+          <option value="20000">焼き鳥：20,000</option>
+          <option value="30000">焼き鳥：30,000</option>
+        </select>
+      </div>
+    </div>
+    <div class="settings-row">
+      <div class="setting-group">
+        <select id="sel-yak-type">
+          <option value="split">焼鳥：均等割り</option>
+          <option value="full">焼鳥：全額払い</option>
+        </select>
+      </div>
+    </div>
+    <div class="toggle-row" onclick="toggleSink()" style="margin-bottom:4px">
+      <span class="toggle-label">沈みボーナス（原点未満 -10,000）</span>
+      <div class="toggle-sw" id="sink-sw"></div>
+    </div>
+    <div class="setting-group" style="margin-bottom:4px">
+      <select id="sel-oka">
+        <option value="none">オカ：なし</option>
+        <option value="15,0,0">オカ：1位+15</option>
+        <option value="10,5,0">オカ：1位+10 / 2位+5</option>
+      </select>
+    </div>
+    <div class="toggle-row" onclick="toggleTobi()" style="margin-bottom:4px">
+      <span class="toggle-label">飛ばしボーナス</span>
+      <div class="toggle-sw" id="tobi-sw"></div>
+    </div>
+
+    <!-- 飛ばしボーナス入力パネル -->
+    <div class="tobi-panel" id="tobi-panel" style="display:none">
+      <div class="tobi-row">
+        <span class="tobi-lbl">場</span>
+        <div class="player-sel-row">
+          <button class="psel-btn on" id="ba-east" onclick="setBa('east')">東場（-20,000）</button>
+          <button class="psel-btn" id="ba-south" onclick="setBa('south')">南場以降（-10,000）</button>
+        </div>
+      </div>
+      <div class="tobi-row">
+        <span class="tobi-lbl">飛ばされた</span>
+        <div class="player-sel-row" id="tobi-loser-btns"></div>
+      </div>
+      <div class="tobi-row">
+        <span class="tobi-lbl">飛ばした</span>
+        <div class="player-sel-row" id="tobi-winner-btns"></div>
+      </div>
+    </div>
+
+    <div class="section-label">持ち点入力</div>
+    <div id="players-wrap"></div>
+
+    <div class="total-row">
+      <span class="total-lbl">合計</span>
+      <span class="total-val" id="total-disp">0点</span>
+    </div>
+    <div class="warn" id="warn" style="display:none">⚠ 合計が 105,000点 になるよう確認してください</div>
+    <button class="calc-btn" onclick="calculate()">精　　算</button>
+  </div>
+</div>
+
+<!-- 結果画面 -->
+<div id="scr-result" style="display:none">
+  <div class="hdr">
+    <a href="index.html" class="hdr-back">＜</a>
+    <span class="hdr-icon">🀄</span>
+    <span class="hdr-title">精算結果</span>
+    <button class="rule-help-btn" onclick="openRule()" style="margin-left:auto">?</button>
+  </div>
+  <div class="body">
+    <div class="result-hdr">
+      <span class="result-title">最終スコア</span>
+      <button class="back-btn" onclick="goBack()">← 戻る</button>
+    </div>
+    <div id="rank-cards"></div>
+    <div class="pay-section">
+      <div class="sub-title">支払い</div>
+      <div id="pay-rows"></div>
+    </div>
+    <div class="detail-section">
+      <div class="sub-title">内訳</div>
+      <div id="detail-rows"></div>
+    </div>
+    <button class="reset-btn" onclick="reset()">🔄 もう一局</button>
+  </div>
+</div>
+
+</div>
+
+<!-- ルール説明モーダル -->
+<div class="modal-overlay" id="rule-modal" onclick="closeRuleOutside(event)">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <span class="modal-title">🀄 精算ルール説明</span>
+      <button class="modal-close" onclick="closeRule()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="m-section">
+        <div class="m-stitle">📌 基本</div>
+        <div class="m-row"><span class="m-key">スタート点</span><span class="m-val"><b>35,000点</b>（3人合計 105,000点）</span></div>
+        <div class="m-row"><span class="m-key">精算単位</span><span class="m-val">（持ち点 − 35,000）÷ 1,000 ＋ ウマ</span></div>
+        <div class="m-row"><span class="m-key">表示</span><span class="m-val">精算点で表示（例：<b>+95</b> = 95,000点受け取り）</span></div>
+      </div>
+
+      <div class="m-section">
+        <div class="m-stitle">🏆 ウマ（選択制）</div>
+        <div class="m-row"><span class="m-key">なし</span><span class="m-val">加減点なし</span></div>
+        <div class="m-row"><span class="m-key">5-10</span><span class="m-val"><b>1位+10</b> / 2位+5 / <span class="neg">3位-15</span></span></div>
+        <div class="m-row"><span class="m-key">15-0</span><span class="m-val"><b>1位+15</b> / 2位 0 / <span class="neg">3位-15</span></span></div>
+        <div class="m-row"><span class="m-key">10-20</span><span class="m-val"><b>1位+20</b> / 2位+10 / <span class="neg">3位-30</span></span></div>
+      </div>
+
+      <div class="m-section">
+        <div class="m-stitle">🐔 焼き鳥（選択制）</div>
+        <div class="m-row"><span class="m-key">対象</span><span class="m-val">1度も和了せずに終局したプレイヤー</span></div>
+        <div class="m-row"><span class="m-key">点数</span><span class="m-val">なし / 10,000 / 20,000 / 30,000点</span></div>
+        <div class="m-row"><span class="m-key">支払い先</span><span class="m-val">焼き鳥でないプレイヤーへ<b>均等</b>に支払い</span></div>
+        <div class="m-example">
+          例）焼き鳥10,000点・Aが焼き鳥<br>
+          <span>→ AはBとCへ各5,000点支払い</span><br>
+          ※1位が焼き鳥でもペナルティあり
+        </div>
+      </div>
+
+      <div class="m-section">
+        <div class="m-stitle">📉 沈みボーナス（ON/OFF）</div>
+        <div class="m-row"><span class="m-key">条件</span><span class="m-val">原点（35,000点）未満で終局</span></div>
+        <div class="m-row"><span class="m-key">ペナルティ</span><span class="m-val"><span class="neg">-10,000点</span>（該当者ごと）</span></div>
+        <div class="m-row"><span class="m-key">受け取り</span><span class="m-val">減点分は全額<b>1位</b>が受け取る</span></div>
+        <div class="m-example">
+          例）A:47,000 / B:33,000 / C:25,000<br>
+          <span>B・Cが各-10,000 → Aが+20,000受け取り</span>
+        </div>
+      </div>
+
+      <div class="m-section">
+        <div class="m-stitle">🎯 オカ（選択制）</div>
+        <div class="m-row"><span class="m-key">仕組み</span><span class="m-val">精算基準を<b>40,000点</b>にして生じる差額を上位者へ配分</span></div>
+        <div class="m-row"><span class="m-key">1位+15</span><span class="m-val"><b>1位に+15</b>加算</span></div>
+        <div class="m-row"><span class="m-key">1位+10/2位+5</span><span class="m-val"><b>1位+10・2位+5</b>加算</span></div>
+      </div>
+
+      <div class="m-section">
+        <div class="m-stitle">💥 飛ばしボーナス（ON/OFF）</div>
+        <div class="m-row"><span class="m-key">条件</span><span class="m-val">0点以下になったプレイヤーが発生</span></div>
+        <div class="m-row"><span class="m-key">東場</span><span class="m-val">飛ばされた → 飛ばした人へ <span class="neg">20,000点</span></span></div>
+        <div class="m-row"><span class="m-key">南場以降</span><span class="m-val">飛ばされた → 飛ばした人へ <span class="neg">10,000点</span></span></div>
+        <div class="m-row"><span class="m-key">ダブロン</span><span class="m-val">2人で飛ばした場合は<b>頭割り</b></span></div>
+        <div class="m-example">
+          例）東場・Aが飛ばされ、BとCがダブロン<br>
+          <span>→ AはBとCへ各10,000点支払い</span>
+        </div>
+      </div>
+
+      <div class="m-url">※ルールはゲーム前に参加者全員で確認してください</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const GENTEN = 35000;
+const TOTAL_REQ = 105000;
+const SINK_PT = 10000;
+
+let sinkOn = false;
+let tobiOn = false;
+let tobiLosers = [];     // 飛ばされたプレイヤーindex配列（複数対応）
+let tobiWinners = [];    // 飛ばしたプレイヤーindex配列（複数対応）
+let tobiRound = 'east';  // 'east' or 'south'
+
+let players = [
+  {name:'A', score:'', yak:false},
+  {name:'B', score:'', yak:false},
+  {name:'C', score:'', yak:false},
+];
+
+function toHalf(s){
+  return s
+    .replace(/[０-９]/g, c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0))
+    .replace(/[－−‐]/g, '-')  // 全角マイナス・U+2212・ハイフン
+    .replace(/[^\d\-]/g, ''); // 数字とマイナス以外を除去
+}
+
+function toggleSink(){
+  sinkOn=!sinkOn;
+  document.getElementById('sink-sw').classList.toggle('on',sinkOn);
+}
+
+function getOka(){
+  const v=document.getElementById('sel-oka').value;
+  if(v==='none') return null;
+  return v.split(',').map(Number); // [1位ボーナス, 2位ボーナス, 3位ボーナス]
+}
+
+function toggleTobi(){
+  tobiOn=!tobiOn;
+  document.getElementById('tobi-sw').classList.toggle('on',tobiOn);
+  document.getElementById('tobi-panel').style.display=tobiOn?'block':'none';
+  if(tobiOn) renderTobiButtons();
+}
+
+function setBa(ba){
+  tobiRound=ba;
+  document.getElementById('ba-east').classList.toggle('on', ba==='east');
+  document.getElementById('ba-south').classList.toggle('on', ba==='south');
+}
+
+function renderTobiButtons(){
+  const names=players.map((p,i)=>p.name||'P'+(i+1));
+
+  // 飛ばされた（複数選択可）
+  let lHtml='';
+  names.forEach((n,i)=>{
+    const isLoser=tobiLosers.includes(i);
+    lHtml+=`<button class="psel-btn${isLoser?' on':''}" onclick="toggleTobiLoser(${i})">${n}</button>`;
+  });
+  document.getElementById('tobi-loser-btns').innerHTML=lHtml;
+
+  // 飛ばした（複数選択可・飛ばされた人は選べない）
+  let wHtml='';
+  names.forEach((n,i)=>{
+    const isWin=tobiWinners.includes(i);
+    const isLoser=tobiLosers.includes(i);
+    wHtml+=`<button class="psel-btn${isWin?' on2':''}${isLoser?' on':''}"
+      onclick="toggleTobiWinner(${i})" ${isLoser?'disabled':''} style="${isLoser?'opacity:.3':''}">${n}</button>`;
+  });
+  document.getElementById('tobi-winner-btns').innerHTML=wHtml;
+}
+
+function toggleTobiLoser(i){
+  const idx=tobiLosers.indexOf(i);
+  if(idx>=0) tobiLosers.splice(idx,1);
+  else tobiLosers.push(i);
+  // 飛ばされた人が飛ばした人に入っていたら除外
+  tobiWinners=tobiWinners.filter(w=>!tobiLosers.includes(w));
+  renderTobiButtons();
+}
+
+function toggleTobiWinner(i){
+  if(tobiLosers.includes(i)) return;
+  const idx=tobiWinners.indexOf(i);
+  if(idx>=0) tobiWinners.splice(idx,1);
+  else tobiWinners.push(i);
+  renderTobiButtons();
+}
+
+function getYakVal(){return parseInt(document.getElementById('sel-yak').value)||0}
+function getUma(){return document.getElementById('sel-uma').value.split(',').map(Number)}
+
+function renderPlayers(){
+  const showYak=getYakVal()>0;
+  let html='';
+  players.forEach((p,i)=>{
+    html+=`<div class="player-card">
+      <div class="player-top">
+        <div class="player-num">${i+1}</div>
+        <input class="player-name" id="nm-${i}" value="${p.name}" placeholder="名前"
+          oninput="players[${i}].name=this.value;if(tobiOn)renderTobiButtons()" maxlength="6">
+        ${showYak?`<button class="yak-btn${p.yak?' on':''}" onclick="toggleYak(${i})">${p.yak?'🐔 焼鳥':'焼鳥'}</button>`:''}
+      </div>
+      <div class="score-wrap">
+        <button class="minus-btn" onclick="toggleMinus(${i})" type="button">±</button>
+        <input class="score-input" id="sc-${i}" type="text" inputmode="numeric"
+          value="${p.score}" placeholder="持ち点"
+          oninput="onScore(${i},this.value)">
+        <span class="score-unit">点</span>
+      </div>
+    </div>`;
+  });
+  document.getElementById('players-wrap').innerHTML=html;
+  updateTotal();
+}
+
+function toggleMinus(i){
+  const el=document.getElementById('sc-'+i);
+  let v=el.value.trim();
+  if(v===''||v==='-'){
+    // 空なら何もしない
+    return;
+  }
+  if(v.startsWith('-')){
+    v=v.slice(1);
+  } else {
+    v='-'+v;
+  }
+  el.value=v;
+  players[i].score=v;
+  updateTotal();
+}
+
+function toggleYak(i){
+  players[i].yak=!players[i].yak;
+  renderPlayers();
+}
+
+function onScore(i,v){
+  v=toHalf(v);
+  document.getElementById('sc-'+i).value=v;
+  players[i].score=v;
+  updateTotal();
+}
+
+function getScores(){
+  return players.map(p=>{
+    const v=parseInt(toHalf(String(p.score||'0')));
+    return isNaN(v)?0:v;
+  });
+}
+
+function updateTotal(){
+  const scores=getScores();
+  const total=scores.reduce((a,b)=>a+b,0);
+  const disp=document.getElementById('total-disp');
+  const warn=document.getElementById('warn');
+  disp.textContent=total.toLocaleString()+'点';
+  const ok=total===TOTAL_REQ;
+  disp.className='total-val '+(ok?'ok':'ng');
+  warn.style.display=ok?'none':'block';
+}
+
+function calculate(){
+  const scores=getScores();
+  const uma=getUma();
+  const yakVal=getYakVal();
+
+  // 順位
+  const sorted=[...scores.map((s,i)=>({i,s}))].sort((a,b)=>b.s-a.s);
+  const rank=Array(3);
+  sorted.forEach((o,r)=>rank[o.i]=r+1);
+  const top=sorted[0].i;
+
+  // 素点換算+ウマ（オカON時は基準点40000、OFFは35000）
+  const okaArr=getOka(); // null or [1位, 2位, 3位]
+  const KIJUN = okaArr ? 40000 : GENTEN;
+  const raw=scores.map((s,i)=>(s-KIJUN)/1000+uma[rank[i]-1]);
+
+  // オカボーナス（順位別）
+  const okaPen=players.map((_,i)=> okaArr ? okaArr[rank[i]-1] : 0);
+
+  // 焼き鳥
+  const yakType=document.getElementById('sel-yak-type').value; // 'split' or 'full'
+  const nonYakIdx=players.map((_,i)=>i).filter(i=>!players[i].yak);
+  const yakPen=players.map(()=>0);
+  if(yakVal>0){
+    players.forEach((p,i)=>{
+      if(!p.yak) return;
+      const recvList=nonYakIdx;
+      if(recvList.length===0) return;
+      if(yakType==='split'){
+        // 均等割り：ペナルティを非焼き鳥プレイヤーで割る
+        yakPen[i]-=yakVal/1000;
+        const perRecv=(yakVal/1000)/recvList.length;
+        recvList.forEach(j=>{ yakPen[j]+=perRecv; });
+      } else {
+        // 全額払い：非焼き鳥プレイヤー各自に設定点数全額支払い
+        yakPen[i]-=(yakVal/1000)*recvList.length;
+        recvList.forEach(j=>{ yakPen[j]+=yakVal/1000; });
+      }
+    });
+  }
+
+  // 沈みボーナス（1着総取りはそのまま）
+  const sinkPen=sinkOn?scores.map(s=>s<GENTEN?-(SINK_PT/1000):0):players.map(()=>0);
+  const sinkPool=sinkPen.reduce((a,b)=>a+(-b),0);
+
+  // 飛ばしボーナス（精算点単位：千点）
+  const tobiBase=(tobiRound==='east'?20000:10000)/1000; // 東場20、南場10
+  const tobiPen=players.map(()=>0);
+  if(tobiOn && tobiLosers.length>0 && tobiWinners.length>0){
+    // 飛ばされた人それぞれが独立して飛ばした人へ支払い
+    tobiLosers.forEach(li=>{
+      tobiPen[li]-=tobiBase;
+      const perWinner=tobiBase/tobiWinners.length;
+      tobiWinners.forEach(wi=>{tobiPen[wi]+=perWinner;});
+    });
+  }
+
+  // 合計精算点
+  const final=players.map((_,i)=>{
+    let v=raw[i]+yakPen[i]+sinkPen[i]+tobiPen[i]+okaPen[i];
+    if(i===top) v+=sinkPool;
+    return v;
+  });
+
+  // 四捨五入・合計0調整
+  const rounded=final.map(v=>Math.round(v));
+  let sum=rounded.reduce((a,b)=>a+b,0);
+  if(sum!==0){
+    let adj=-1,maxAbs=-1;
+    rounded.forEach((v,i)=>{if(i!==top&&Math.abs(v)>maxAbs){maxAbs=Math.abs(v);adj=i;}});
+    if(adj===-1)adj=top;
+    rounded[adj]-=sum;
+  }
+
+  // ランクカード
+  let rcHtml='';
+  sorted.forEach((o,r)=>{
+    const i=o.i;
+    const pt=rounded[i];
+    const cls=pt>0?'pos':pt<0?'neg':'zer';
+    const str=pt>0?`+${pt}`:String(pt);
+    const badge=['🥇','🥈','🥉'][r];
+    rcHtml+=`<div class="rank-card${r===0?' r1':''}">
+      <div class="rank-badge">${badge}</div>
+      <div class="rank-info">
+        <div class="rank-name">${players[i].name||'P'+(i+1)}</div>
+        <div class="rank-score-raw">${scores[i].toLocaleString()}点</div>
+      </div>
+      <div class="rank-pt ${cls}">${str}</div>
+    </div>`;
+  });
+  document.getElementById('rank-cards').innerHTML=rcHtml;
+
+  // 支払い（精算点→実際の点数に戻して表示）
+  const neg=rounded.map((v,i)=>({i,v,name:players[i].name||'P'+(i+1)})).filter(p=>p.v<0).sort((a,b)=>a.v-b.v);
+  const pos=rounded.map((v,i)=>({i,v,name:players[i].name||'P'+(i+1)})).filter(p=>p.v>0).sort((a,b)=>b.v-a.v);
+  const pr=pos.map(p=>({...p,rem:p.v}));
+  const nr=neg.map(p=>({...p,rem:-p.v}));
+  const txns=[];
+  let pi=0,ri=0;
+  while(pi<nr.length&&ri<pr.length){
+    const amt=Math.min(nr[pi].rem,pr[ri].rem);
+    if(amt>0)txns.push({from:nr[pi].name,to:pr[ri].name,amt});
+    nr[pi].rem-=amt;pr[ri].rem-=amt;
+    if(nr[pi].rem===0)pi++;
+    if(pr[ri].rem===0)ri++;
+  }
+  let payHtml='';
+  if(txns.length===0){
+    payHtml='<div style="font-size:14px;color:#9fcfb0;padding:4px 0">支払いなし</div>';
+  } else {
+    txns.forEach(t=>{
+      payHtml+=`<div class="pay-row">
+        <span class="pay-from">${t.from}</span>
+        <span class="pay-arrow">→</span>
+        <span class="pay-to">${t.to}</span>
+        <span class="pay-amt">${(t.amt*1000).toLocaleString()}点</span>
+      </div>`;
+    });
+  }
+  document.getElementById('pay-rows').innerHTML=payHtml;
+
+  // 内訳（縦表示・3列横並び）
+  let detHtml='<div class="detail-cols">';
+  players.forEach((p,i)=>{
+    const name=p.name||'P'+(i+1);
+    const base=parseFloat(((scores[i]-KIJUN)/1000).toFixed(1));
+    const u=uma[rank[i]-1];
+    const yv=yakPen[i];
+    const sv=sinkPen[i];
+    const tv=tobiPen[i];
+    const ov=okaPen[i];
+    const bv=(i===top&&sinkPool>0)?sinkPool:0;
+    const pt=rounded[i];
+    const ptCls=pt>0?'pos':pt<0?'neg':'zer';
+    const numCls=v=>v>0?'pos':v<0?'neg':'zer';
+    const rows=[
+      {key:'素点', val:base},
+      {key:'ウマ', val:u},
+      {key:'焼鳥', val:yv},
+      {key:'沈み', val:sv},
+      {key:'飛', val:tv},
+      {key:'オカ', val:ov},
+      {key:'沈徴', val:bv},
+    ].filter(r=>r.val!==0);
+    let rowsHtml='';
+    rows.forEach(r=>{
+      const s=(r.val>0?'+':'')+r.val;
+      rowsHtml+=`<div class="dcol-row"><span class="dcol-key">${r.key}</span><span class="dcol-num ${numCls(r.val)}">${s}</span></div>`;
+    });
+    detHtml+=`<div class="detail-col">
+      <div class="dcol-name">${name}</div>
+      ${rowsHtml}
+      <hr class="dcol-divider">
+      <div class="dcol-total"><span class="dcol-total-lbl">計</span><span class="dcol-total-num ${ptCls}">${pt>0?'+':''}${pt}</span></div>
+    </div>`;
+  });
+  detHtml+='</div>';
+  document.getElementById('detail-rows').innerHTML=detHtml;
+
+  document.getElementById('scr-input').style.display='none';
+  document.getElementById('scr-result').style.display='block';
+  window.scrollTo(0,0);
+}
+
+function goBack(){
+  const umaVal = document.getElementById('sel-uma').value;
+  const yakVal = document.getElementById('sel-yak').value;
+  const yakTypeVal = document.getElementById('sel-yak-type').value;
+  const okaVal = document.getElementById('sel-oka').value;
+
+  document.getElementById('scr-result').style.display='none';
+  document.getElementById('scr-input').style.display='block';
+
+  document.getElementById('sel-uma').value = umaVal;
+  document.getElementById('sel-yak').value = yakVal;
+  document.getElementById('sel-yak-type').value = yakTypeVal;
+  document.getElementById('sel-oka').value = okaVal;
+
+  window.scrollTo(0,0);
+}
+
+function reset(){
+  const umaVal = document.getElementById('sel-uma').value;
+  const yakVal = document.getElementById('sel-yak').value;
+  const yakTypeVal = document.getElementById('sel-yak-type').value;
+  const okaVal = document.getElementById('sel-oka').value;
+
+  players=players.map(p=>({...p,score:'',yak:false}));
+  tobiLosers=[];
+  tobiWinners=[];
+
+  document.getElementById('scr-result').style.display='none';
+  document.getElementById('scr-input').style.display='block';
+
+  // selectの値を明示的に復元
+  document.getElementById('sel-uma').value = umaVal;
+  document.getElementById('sel-yak').value = yakVal;
+  document.getElementById('sel-yak-type').value = yakTypeVal;
+  document.getElementById('sel-oka').value = okaVal;
+
+  renderPlayers();
+  if(tobiOn) renderTobiButtons();
+  window.scrollTo(0,0);
+}
+
+function tick(){
+  const n=new Date();
+  const el=document.getElementById('hdr-time');
+  if(el)el.textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
+}
+
+function openRule(){
+  document.getElementById('rule-modal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function closeRule(){
+  document.getElementById('rule-modal').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+function closeRuleOutside(e){
+  if(e.target===document.getElementById('rule-modal')) closeRule();
+}
+
+document.getElementById('sel-yak').addEventListener('change',renderPlayers);
+
+tick();
+setInterval(tick,10000);
+renderPlayers();
+</script>
+</body>
+</html>
